@@ -23,4 +23,4 @@ class CVaRLoss(nn.Module):
             return torch.mean(torch.index_select(loss, 0, values_at_risk))
         elif self.reduction == 'sum':
             return torch.sum(torch.index_select(loss, 0, values_at_risk))
-        return values_at_risk
+        return torch.index_select(loss, 0, values_at_risk)
