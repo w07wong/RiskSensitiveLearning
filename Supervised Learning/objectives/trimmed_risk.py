@@ -4,6 +4,7 @@ import torch.nn as nn
 class TrimmedRisk(nn.Module):
     def __init__(self, a=0.05, criterion=nn.CrossEntropyLoss(reduction='none'), reduction='mean'):
         super().__init__()
+        assert a >= 0 and a <= 0.5 'a must be in [0, 0.5]'
         self.a = a
         self.criterion = criterion
         self.reduction = reduction

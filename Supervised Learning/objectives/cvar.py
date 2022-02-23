@@ -4,6 +4,7 @@ import torch.nn as nn
 class CVaRLoss(nn.Module):
     def __init__(self, a=0.05, criterion=nn.CrossEntropyLoss(reduction='none'), reduction='mean'):
         super().__init__()
+        assert a >= 0 and a <= 1 'a must be in [0, 1]'
         self.a = a
         self.criterion = criterion
         self.reduction = reduction
@@ -12,7 +13,7 @@ class CVaRLoss(nn.Module):
         sorted_loss, sorted_indices = torch.sort(loss, dim=0, descending=False, stable=True)
         empirical_cdf = torch.argsort(sorted_indices) / len(loss)
         sorted_cdf, _ = torch.sort(empirical_cdf, dim=0, descending=False, stable=True)
-        value_at_risk_idx = np.searchsorted(sorted_cdf, 1 - self.a, side='left')
+        value_at_risk_idx = min(np.searchsorted(sorted_cdf, 1 - self.a, side='left'), len(sorted_cdf) - 1)
         return sorted_loss[value_at_risk_idx]
     
     def forward(self, output, labels):
