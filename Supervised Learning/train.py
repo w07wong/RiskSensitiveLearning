@@ -1,8 +1,8 @@
 import argparse
 import torch.nn as nn
-from TwoLayerMLP import TwoLayerMLP
-from trainer import Trainer
-from constants import DeviceConstants, ObjectiveConstants
+from model import TwoLayerMLP
+from data import Dataset
+from training_utils import Trainer, DeviceConstants, TrainingConstants, ObjectiveConstants
 import objectives import human_aligned_risk, entropic_risk, trimmed_risk, cva, mean_variance
 
 if __name__ == '__main__':
