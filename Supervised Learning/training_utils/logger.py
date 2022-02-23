@@ -24,7 +24,6 @@ root_logger.setLevel(logging.INFO)
 
 np.set_printoptions(suppress=True)
 
-
 native_logger = logging.getLogger(__file__)
 
 class Logger:

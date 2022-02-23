@@ -8,15 +8,18 @@ class Trainer(object):
     def __init__(self,
                  net,
                  dataset,
+                 criterion,
                  num_epochs=TrainingConstants.NUM_EPOCHS,
                  total_size=TrainingConstants.TOTAL_SIZE,
                  val_size=TrainingConstants.VAL_SIZE,
                  bsz=TrainingConstants.BSZ,
                  base_lr=TrainingConstants.BASE_LR,
                  device=TrainingConstants.DEVICE,
-                 log_interval=TrainingConstants.LOG_INTERVAL):
+                 log_interval=TrainingConstants.LOG_INTERVAL,
+                 save_frequency=TrainingConstants.SAVE_FREQUENCY):
         self._net = net
         self._dataset = dataset
+        self._criterion = criterion
         self._num_epochs = num_epochs
         self._total_size = total_size
         self._val_size = val_size
@@ -24,6 +27,7 @@ class Trainer(object):
         self._base_lr = base_lr
         self._device = device
         self._log_interval = log_interval
+        self._save_frequency = save_frequency
 
         self._native_logger = logging.getLogger(self.__class__.__name__)
 
@@ -90,7 +94,7 @@ class Trainer(object):
             self._optimizer.zero_grad()
 
             output = self._net(X)
-            loss = #TODO
+            loss = self._criterion(output, y)
             loss.backward()
 
             self._optimizer.step()
@@ -124,7 +128,7 @@ class Trainer(object):
 
                 output = self._net(X)
 
-                loss = #TODO
+                loss = self._criterion(output, y)
                 eval_loss += loss.item()
                 eval_losses.append(loss.item())
 
@@ -138,3 +142,6 @@ class Trainer(object):
             self._train(epoch)
             self._eval(epoch)
             self._native_logger.info('')
+            if epoch % self._save_frequency == 0:
+                self._net.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, str(epoch) + '_')
+        self._net.save(self._output_dir, TrainingConstants.NET_SAVE_FNAME, 'final_')
