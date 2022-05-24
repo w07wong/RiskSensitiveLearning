@@ -2,14 +2,12 @@ import torch
 import torch.nn as nn
 
 class MeanVariance(nn.Module):
-    def __init__(self, c=0.1, criterion=nn.CrossEntropyLoss(reduction='none'), reduction='mean'):
+    def __init__(self, c=0.1, reduction='mean'):
         super().__init__()
         self.c = c
-        self.criterion = criterion
         self.reduction = reduction
     
-    def forward(self, output, labels):
-        loss = self.criterion(output, labels)
+    def forward(self, loss):
         var, mean = torch.var_mean(loss, unbiased=False)
         
         if self.reduction == 'mean':

@@ -2,11 +2,10 @@ import torch
 import torch.nn as nn
 
 class TrimmedRisk(nn.Module):
-    def __init__(self, a=0.05, criterion=nn.CrossEntropyLoss(reduction='none'), reduction='mean'):
+    def __init__(self, a=0.05, reduction='mean'):
         super().__init__()
         assert a >= 0 and a <= 0.5, 'a must be in [0, 0.5]'
         self.a = a
-        self.criterion = criterion
         self.reduction = reduction
     
     def _get_untrimmed_losses(self, loss):
@@ -14,8 +13,7 @@ class TrimmedRisk(nn.Module):
         empirical_cdf = torch.argsort(sorted_indices) / len(loss)
         return ((empirical_cdf >= self.a) & (empirical_cdf <= 1 - self.a)).nonzero().squeeze()
     
-    def forward(self, output, labels):
-        loss = self.criterion(output, labels)
+    def forward(self, loss):
         untrimmed_losses = self._get_untrimmed_losses(loss)
         
         if self.reduction == 'mean':

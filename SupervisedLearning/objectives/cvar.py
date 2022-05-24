@@ -3,11 +3,10 @@ import torch.nn as nn
 import numpy as np
 
 class CVaR(nn.Module):
-    def __init__(self, a=0.05, inverted=False, criterion=nn.CrossEntropyLoss(reduction='none'), reduction='mean'):
+    def __init__(self, a=0.05, inverted=False, reduction='mean'):
         super().__init__()
         self.a = a
         self.inverted = inverted
-        self.criterion = criterion
         self.reduction = reduction
     
     def _value_at_risk(self, loss):
@@ -17,9 +16,7 @@ class CVaR(nn.Module):
         value_at_risk_idx = np.searchsorted(sorted_cdf, 1 - self.a, side='left')
         return sorted_loss[value_at_risk_idx]
     
-    def forward(self, output, labels):
-        loss = self.criterion(output, labels)
-        
+    def forward(self, loss):
         multiplier = 1
         if self.inverted:
             loss *= -1
@@ -28,10 +25,16 @@ class CVaR(nn.Module):
         values_at_risk = (loss >= self._value_at_risk(loss)).nonzero().squeeze()
         
         if self.reduction == 'mean':
-            return multiplier * torch.mean(torch.index_select(loss, 0, values_at_risk))
+            risk = multiplier * torch.mean(torch.index_select(loss, 0, values_at_risk))
+            loss *= multiplier # Undo modifier to loss passed in.
+            return risk
         elif self.reduction == 'sum':
-            return multiplier * torch.sum(torch.index_select(loss, 0, values_at_risk))
+            risk = multiplier * torch.sum(torch.index_select(loss, 0, values_at_risk))
+            loss *= multiplier
+            return risk
         elif self.reduction == 'none':
-            return values_at_risk
+            risk = values_at_risk
+            loss *= multiplier
+            return risk
         else:
             raise Exception('Only mean, sum, none reduction types supported.')
