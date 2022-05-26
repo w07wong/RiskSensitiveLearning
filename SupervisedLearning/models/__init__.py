@@ -1,1 +1,2 @@
-import TwoLayerMLP
+# import TwoLayerMLP
+from .vgg import *
